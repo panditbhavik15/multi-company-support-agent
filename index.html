@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TriageIQ — AI Support Triage Agent</title>
+  <meta name="description" content="Intelligent support triage agent for HackerRank, Claude, and Visa. Automatically classify, route, and respond to support tickets." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <!-- Ambient Background -->
+  <div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="header" id="app-header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="2" y="2" width="28" height="28" rx="8" stroke="url(#logo-grad)" stroke-width="2.5"/>
+            <path d="M10 16h12M16 10v12" stroke="url(#logo-grad)" stroke-width="2.5" stroke-linecap="round"/>
+            <defs><linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#818cf8"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs>
+          </svg>
+        </div>
+        <span class="logo-text">Triage<span class="logo-accent">IQ</span></span>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-hr" title="HackerRank">HR</span>
+        <span class="badge badge-cl" title="Claude">CL</span>
+        <span class="badge badge-vi" title="Visa">VI</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Input Panel -->
+    <section class="panel panel-input" id="input-panel">
+      <div class="panel-header">
+        <div class="panel-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <h2>Support Ticket</h2>
+      </div>
+
+      <form id="ticket-form" autocomplete="off">
+        <div class="form-group">
+          <label for="company-select">Company</label>
+          <div class="select-wrapper">
+            <select id="company-select" required>
+              <option value="">Select a company…</option>
+              <option value="HackerRank">HackerRank</option>
+              <option value="Claude">Claude (Anthropic)</option>
+              <option value="Visa">Visa</option>
+              <option value="None">Unknown / None</option>
+            </select>
+            <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="subject-input">Subject <span class="label-hint">(optional)</span></label>
+          <input type="text" id="subject-input" placeholder="e.g. Can't access my account" />
+        </div>
+
+        <div class="form-group">
+          <label for="issue-input">Issue <span class="label-required">*</span></label>
+          <textarea id="issue-input" rows="6" placeholder="Describe the support issue in detail…" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="context-input">Support Context <span class="label-hint">(documentation excerpts)</span></label>
+          <textarea id="context-input" rows="5" placeholder="Paste relevant support documentation here…"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="btn-load-sample">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Load Sample
+          </button>
+          <button type="submit" class="btn btn-primary" id="btn-triage">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Triage Ticket</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Output Panel -->
+    <section class="panel panel-output" id="output-panel">
+      <div class="panel-header">
+        <div class="panel-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h2>Triage Result</h2>
+        <div class="status-badge" id="status-badge" style="display:none;"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+            <path d="M24 28c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+            <circle cx="24" cy="38" r="2" fill="currentColor" opacity="0.3"/>
+            <circle cx="32" cy="42" r="2" fill="currentColor" opacity="0.3"/>
+            <circle cx="40" cy="38" r="2" fill="currentColor" opacity="0.3"/>
+          </svg>
+        </div>
+        <p>Submit a ticket to see the triage decision</p>
+        <span class="empty-hint">The agent will classify, route, and respond</span>
+      </div>
+
+      <!-- Processing State -->
+      <div class="processing-state" id="processing-state" style="display:none;">
+        <div class="processing-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring spinner-ring-2"></div>
+        </div>
+        <p class="processing-text" id="processing-text">Analyzing ticket…</p>
+        <div class="processing-steps" id="processing-steps"></div>
+      </div>
+
+      <!-- Result State -->
+      <div class="result-state" id="result-state" style="display:none;">
+        <!-- Visual Summary Cards -->
+        <div class="result-summary" id="result-summary"></div>
+
+        <!-- Response Card -->
+        <div class="result-card" id="result-response-card">
+          <div class="result-card-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>User-Facing Response</span>
+          </div>
+          <p class="result-response-text" id="result-response-text"></p>
+        </div>
+
+        <!-- Justification Card -->
+        <div class="result-card result-card-internal" id="result-justification-card">
+          <div class="result-card-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Internal Justification</span>
+            <span class="internal-badge">Internal Only</span>
+          </div>
+          <p class="result-justification-text" id="result-justification-text"></p>
+        </div>
+
+        <!-- Raw JSON -->
+        <details class="result-json-details">
+          <summary>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Raw JSON Output
+          </summary>
+          <pre class="result-json" id="result-json"></pre>
+        </details>
+
+        <button class="btn btn-secondary btn-reset" id="btn-reset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          New Ticket
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>TriageIQ — Intelligent Support Routing Engine</p>
+  </footer>
+
+  <script src="triage-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
