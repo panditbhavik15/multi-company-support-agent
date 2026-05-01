@@ -426,9 +426,29 @@ textarea::placeholder {
 }
 
 .btn-reset {
-  width: 100%;
+  flex: 1;
   justify-content: center;
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
   margin-top: 16px;
+}
+
+.btn-csv {
+  flex: 1;
+  justify-content: center;
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--accent-emerald);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.btn-csv:hover {
+  background: rgba(52, 211, 153, 0.18);
+  border-color: rgba(52, 211, 153, 0.35);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-emerald);
 }
 
 /* --- Empty State --- */

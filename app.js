@@ -44,6 +44,7 @@ const resultJustificationText = document.getElementById('result-justification-te
 const resultJson = document.getElementById('result-json');
 
 let sampleIndex = 0;
+let triageHistory = [];
 
 // Load sample
 btnSample.addEventListener('click', () => {
@@ -90,6 +91,20 @@ form.addEventListener('submit', async (e) => {
 
   await delay(500);
   const result = window.triageTicket({ issue, subject, company, context });
+
+  // Store in history for CSV export
+  triageHistory.push({
+    timestamp: new Date().toISOString(),
+    company,
+    subject,
+    issue,
+    status: result.status,
+    request_type: result.request_type,
+    product_area: result.product_area,
+    response: result.response,
+    justification: result.justification
+  });
+
   showResult(result);
 });
 
@@ -172,3 +187,36 @@ function formatType(t) {
 function delay(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
+
+// --- CSV Export ---
+function escapeCSV(val) {
+  const str = String(val ?? '').replace(/"/g, '""');
+  return `"${str}"`;
+}
+
+function exportCSV() {
+  if (triageHistory.length === 0) {
+    alert('No triage results to export. Process at least one ticket first.');
+    return;
+  }
+
+  const headers = ['Timestamp', 'Company', 'Subject', 'Issue', 'Status', 'Request Type', 'Product Area', 'Response', 'Justification'];
+  const keys = ['timestamp', 'company', 'subject', 'issue', 'status', 'request_type', 'product_area', 'response', 'justification'];
+
+  const rows = triageHistory.map(row => keys.map(k => escapeCSV(row[k])).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `triage_results_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Wire up CSV button
+const btnCSV = document.getElementById('btn-export-csv');
+if (btnCSV) btnCSV.addEventListener('click', exportCSV);
